@@ -1,98 +1,281 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Nest XLR8 - Scalable NestJS Application
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A production-ready NestJS application with authentication, user management, and comprehensive testing. Built with clean architecture principles, security best practices, and scalability in mind.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Features
 
-## Description
+- **Authentication & Authorization**: JWT-based authentication with secure password hashing
+- **User Management**: Complete CRUD operations for user management
+- **Database Integration**: Prisma ORM with MySQL support
+- **API Documentation**: Swagger/OpenAPI documentation
+- **Security**: Helmet, CORS, rate limiting, input validation
+- **Testing**: Unit tests, integration tests, and e2e tests
+- **Logging**: Comprehensive request/response logging
+- **Error Handling**: Global exception handling with proper error responses
+- **Validation**: Input validation with class-validator
+- **TypeScript**: Full TypeScript support with strict typing
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📋 Prerequisites
 
-## Project setup
+- Node.js (v18 or higher)
+- MySQL (v8 or higher)
+- npm or yarn
 
+## 🛠️ Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd nest-xlr8
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env
+   ```
+   
+   Update the `.env` file with your configuration:
+   ```env
+   # Database
+   DATABASE_URL="mysql://username:password@localhost:3306/nest_xlr8"
+   
+   # JWT
+   JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
+   JWT_EXPIRES_IN="1h"
+   
+   # Server
+   PORT=3000
+   NODE_ENV="development"
+   
+   # CORS
+   CORS_ORIGIN="http://localhost:3000"
+   
+   # Rate Limiting
+   RATE_LIMIT_TTL=60
+   RATE_LIMIT_LIMIT=100
+   ```
+
+4. **Set up the database**
+   ```bash
+   # Generate Prisma client
+   npx prisma generate
+   
+   # Run database migrations
+   npx prisma migrate dev
+   ```
+
+## 🚀 Running the Application
+
+### Development
 ```bash
-$ npm install
+npm run start:dev
 ```
 
-## Compile and run the project
-
+### Production
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run build
+npm run start:prod
 ```
 
-## Run tests
-
+### Debug Mode
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:debug
 ```
 
-## Deployment
+## 🧪 Testing
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+### Unit Tests
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run test
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### E2E Tests
+```bash
+npm run test:e2e
+```
 
-## Resources
+### Test Coverage
+```bash
+npm run test:cov
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### Watch Mode
+```bash
+npm run test:watch
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 📚 API Documentation
 
-## Support
+Once the application is running, you can access the Swagger documentation at:
+- **Development**: http://localhost:3000/api/docs
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 🔧 Available Scripts
 
-## Stay in touch
+- `npm run build` - Build the application
+- `npm run start` - Start the application
+- `npm run start:dev` - Start in development mode with hot reload
+- `npm run start:debug` - Start in debug mode
+- `npm run start:prod` - Start in production mode
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+- `npm run test` - Run unit tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:cov` - Run tests with coverage
+- `npm run test:e2e` - Run e2e tests
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🏗️ Project Structure
 
-## License
+```
+src/
+├── common/                 # Shared utilities and services
+│   ├── decorators/        # Custom decorators
+│   ├── filters/           # Exception filters
+│   ├── guards/            # Authentication guards
+│   ├── interceptors/      # Request/response interceptors
+│   ├── middleware/        # Custom middleware
+│   ├── pipes/             # Validation pipes
+│   └── services/          # Shared services (PasswordService)
+├── config/                # Configuration module
+├── database/              # Database configuration and Prisma service
+├── modules/               # Feature modules
+│   ├── auth/              # Authentication module
+│   │   ├── dto/           # Data Transfer Objects
+│   │   ├── strategies/    # Passport strategies
+│   │   ├── auth.controller.ts
+│   │   ├── auth.service.ts
+│   │   └── auth.module.ts
+│   └── users/             # User management module
+│       ├── dto/           # Data Transfer Objects
+│       ├── users.controller.ts
+│       ├── users.service.ts
+│       └── users.module.ts
+├── shared/                # Shared interfaces and utilities
+│   ├── constants.ts       # Application constants
+│   ├── interfaces.ts      # TypeScript interfaces
+│   └── utils.ts           # Utility functions
+├── app.module.ts          # Root module
+└── main.ts                # Application entry point
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 🔐 Authentication
+
+The application uses JWT-based authentication. Here's how to use it:
+
+### Register a new user
+```bash
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "SecurePass123!",
+    "bio": "Software developer"
+  }'
+```
+
+### Login
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john@example.com",
+    "password": "SecurePass123!"
+  }'
+```
+
+### Access protected routes
+```bash
+curl -X GET http://localhost:3000/users \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+## 🛡️ Security Features
+
+- **Password Hashing**: Uses bcrypt with salt rounds
+- **JWT Authentication**: Secure token-based authentication
+- **Input Validation**: Comprehensive input validation using class-validator
+- **Rate Limiting**: Prevents abuse with configurable rate limits
+- **CORS**: Configurable Cross-Origin Resource Sharing
+- **Helmet**: Security headers for protection against common vulnerabilities
+- **SQL Injection Protection**: Prisma ORM provides protection against SQL injection
+
+## 🧪 Testing Strategy
+
+- **Unit Tests**: Test individual services and components
+- **Integration Tests**: Test module interactions
+- **E2E Tests**: Test complete user workflows
+- **Mocking**: Proper mocking of external dependencies
+- **Coverage**: Comprehensive test coverage reporting
+
+## 📈 Performance Considerations
+
+- **Database Indexing**: Proper database indexes for optimal query performance
+- **Pagination**: Implemented for large datasets
+- **Connection Pooling**: Prisma handles database connection pooling
+- **Caching**: Ready for Redis integration
+- **Compression**: Built-in response compression
+
+## 🔧 Configuration
+
+The application uses a centralized configuration system:
+
+- Environment variables for sensitive data
+- Type-safe configuration service
+- Default values for development
+- Validation of required configuration
+
+## 🚀 Deployment
+
+### Docker (Recommended)
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "run", "start:prod"]
+```
+
+### Environment Variables for Production
+- Set `NODE_ENV=production`
+- Use strong JWT secrets
+- Configure proper CORS origins
+- Set up database connection pooling
+- Configure rate limiting appropriately
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Check the API documentation at `/api/docs`
+- Review the test files for usage examples
+
+## 🔄 Changelog
+
+### v1.0.0
+- Initial release
+- Authentication system
+- User management
+- API documentation
+- Comprehensive testing
+- Security features
