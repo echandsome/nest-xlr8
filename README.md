@@ -25,7 +25,7 @@ A production-ready NestJS application with authentication, user management, and 
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/echandsome/nest-xlr8
    cd nest-xlr8
    ```
 
@@ -112,7 +112,7 @@ npm run test:watch
 ## 📚 API Documentation
 
 Once the application is running, you can access the Swagger documentation at:
-- **Development**: http://localhost:3000/api/docs
+- **Development**: http://localhost:3000/api/v1/docs
 
 ## 🔧 Available Scripts
 
