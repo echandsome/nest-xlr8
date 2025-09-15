@@ -1,26 +1,29 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { PrismaService } from '@/database/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from '@/database/schemas/user.schema';
 import { CreateUserData, UpdateUserData } from '@/shared/interfaces';
 import { ERROR_MESSAGES } from '@/shared/constants';
-import { sanitizeUser } from '@/shared/utils';
+import { sanitizeData } from '@/shared/utils';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async findAll(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
     const [users, total] = await Promise.all([
-      this.prisma.user.findMany({
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.user.count(),
+      this.userModel
+        .find()
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .exec(),
+      this.userModel.countDocuments().exec(),
     ]);
 
     return {
-      data: users.map(sanitizeUser),
+      data: users.map(sanitizeData),
       meta: {
         page,
         limit,
@@ -32,31 +35,32 @@ export class UsersService {
     };
   }
 
-  async findOne(id: number) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+  async findOne(id: string) {
+    const user = await this.userModel.findById(id).exec();
     if (!user) {
       throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
-    return sanitizeUser(user);
+    return sanitizeData(user);
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
+    return this.userModel.findOne({ email }).exec();
   }
 
   async create(data: CreateUserData) {
     try {
-      const user = await this.prisma.user.create({ data });
-      return sanitizeUser(user);
+      const user = new this.userModel(data);
+      const savedUser = await user.save();
+      return sanitizeData(savedUser);
     } catch (error) {
-      if (error.code === 'P2002') {
+      if (error.code === 11000) {
         throw new ConflictException(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS);
       }
       throw error;
     }
   }
 
-  async update(id: number, data: UpdateUserData) {
+  async update(id: string, data: UpdateUserData) {
     const user = await this.findOne(id);
     
     // Check if email is being changed and if it already exists
@@ -67,17 +71,13 @@ export class UsersService {
       }
     }
 
-    const updatedUser = await this.prisma.user.update({
-      where: { id },
-      data,
-    });
-
-    return sanitizeUser(updatedUser);
+    const updatedUser = await this.userModel.findByIdAndUpdate(id, data, { new: true }).exec();
+    return sanitizeData(updatedUser);
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     await this.findOne(id); // This will throw if user doesn't exist
-    await this.prisma.user.delete({ where: { id } });
+    await this.userModel.findByIdAndDelete(id).exec();
     return { message: 'User deleted successfully' };
   }
 }

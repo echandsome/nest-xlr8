@@ -8,7 +8,6 @@ import {
   Delete, 
   Query, 
   UseGuards,
-  ParseIntPipe,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -47,7 +46,7 @@ export class UsersController {
           items: {
             type: 'object',
             properties: {
-              id: { type: 'number' },
+              id: { type: 'string' },
               name: { type: 'string' },
               email: { type: 'string' },
               bio: { type: 'string' },
@@ -79,7 +78,7 @@ export class UsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
-  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @ApiResponse({
     status: 200,
     description: 'User retrieved successfully',
@@ -88,7 +87,7 @@ export class UsersController {
     status: 404,
     description: 'User not found',
   })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
@@ -113,7 +112,7 @@ export class UsersController {
 
   @Put(':id')
   @ApiOperation({ summary: 'Update user by ID' })
-  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @ApiResponse({
     status: 200,
     description: 'User updated successfully',
@@ -131,7 +130,7 @@ export class UsersController {
     description: 'Validation failed',
   })
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
@@ -140,7 +139,7 @@ export class UsersController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete user by ID' })
-  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @ApiResponse({
     status: 204,
     description: 'User deleted successfully',
@@ -149,7 +148,7 @@ export class UsersController {
     status: 404,
     description: 'User not found',
   })
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
 }

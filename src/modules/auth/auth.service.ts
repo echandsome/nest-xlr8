@@ -6,7 +6,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthResponse, JwtPayload } from '../../shared/interfaces';
 import { ERROR_MESSAGES } from '../../shared/constants';
-import { sanitizeUser } from '../../shared/utils';
+import { sanitizeData } from '../../shared/utils';
 
 @Injectable()
 export class AuthService {
@@ -48,7 +48,7 @@ export class AuthService {
 
     return {
       access_token,
-      user: sanitizeUser(user),
+      user: sanitizeData(user),
     };
   }
 
@@ -74,7 +74,7 @@ export class AuthService {
 
     return {
       access_token,
-      user: sanitizeUser(user),
+      user: sanitizeData(user),
     };
   }
 
@@ -83,6 +83,6 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
-    return sanitizeUser(user);
+    return sanitizeData(user);
   }
 }

@@ -6,7 +6,7 @@ export class ConfigService {
   constructor(private config: NestConfigService) {}
 
   get databaseUrl(): string {
-    return this.config.get<string>('DATABASE_URL')!;
+    return this.config.get<string>('DATABASE_URL', 'mongodb://localhost:27017/nest-xlr8')!;
   }
 
   get jwtSecret(): string {
