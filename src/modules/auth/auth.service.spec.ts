@@ -14,13 +14,13 @@ describe('AuthService', () => {
   let jwtService: JwtService;
 
   const mockUser = {
-    id: 1,
+    id: '507f1f77bcf86cd799439011',
     name: 'John Doe',
     email: 'john@example.com',
     password: 'hashedPassword',
     bio: 'Test bio',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: '2025-09-15T15:41:26.904Z',
+    updatedAt: '2025-09-15T15:41:26.904Z',
   };
 
   const mockUsersService = {

@@ -1,19 +1,11 @@
-import { Module } from '@nestjs/common';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { ConfigModule } from '@/config/config.module';
-import { DatabaseModule } from '@/database/database.module';
+import { Global, Module } from '@nestjs/common';
 import { IModule } from '@/modules/index.module';
+import { CoreModule } from '@/core/core.module';
 
+@Global()
 @Module({
   imports: [
-    ConfigModule,
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000, // 1 minute
-        limit: 100, // 100 requests per minute
-      },
-    ]),
-    DatabaseModule,
+    CoreModule,
     IModule
   ],
 })

@@ -5,11 +5,17 @@ import helmet from 'helmet';
 import { AppModule } from '@/app.module';
 import { HttpExceptionFilter } from '@/common/filters/http-exception.filter';
 import { LoggingInterceptor } from '@/common/interceptors/logging.interceptor';
-import { ConfigService } from '@/config/config.service';
+import { ConfigService } from '@/core/config/config.service';
+import { CustomLoggerService } from '@/core/logger/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const customLogger = app.get(CustomLoggerService);
+  
+  // Use custom logger service
+  app.useLogger(customLogger);
+  
   const logger = new Logger('Bootstrap');
 
   // Security
@@ -35,7 +41,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
 
   // Global interceptors
-  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(new LoggingInterceptor(customLogger));
 
   app.setGlobalPrefix(configService.globalPrefix);
 

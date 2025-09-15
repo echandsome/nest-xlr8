@@ -6,7 +6,7 @@ A production-ready NestJS application with authentication, user management, and 
 
 - **Authentication & Authorization**: JWT-based authentication with secure password hashing
 - **User Management**: Complete CRUD operations for user management
-- **Database Integration**: Prisma ORM with MySQL support
+- **Database Integration**: Mongoose ODM with MongoDB support
 - **API Documentation**: Swagger/OpenAPI documentation
 - **Security**: Helmet, CORS, rate limiting, input validation
 - **Testing**: Unit tests, integration tests, and e2e tests
@@ -18,7 +18,7 @@ A production-ready NestJS application with authentication, user management, and 
 ## 📋 Prerequisites
 
 - Node.js (v18 or higher)
-- MySQL (v8 or higher)
+- MongoDB (v4.4 or higher)
 - npm or yarn
 
 ## 🛠️ Installation
@@ -42,7 +42,7 @@ A production-ready NestJS application with authentication, user management, and 
    Update the `.env` file with your configuration:
    ```env
    # Database
-   DATABASE_URL="mysql://username:password@localhost:3306/nest_xlr8"
+   DATABASE_URL="mongodb://localhost:27017/nest-xlr8"
    
    # JWT
    JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
@@ -58,15 +58,21 @@ A production-ready NestJS application with authentication, user management, and 
    # Rate Limiting
    RATE_LIMIT_TTL=60
    RATE_LIMIT_LIMIT=100
+   
+   # Global Prefix
+   GLOBAL_PREFIX="api/v1"
+   
+   # Logging
+   LOG_LEVEL="info"
+   LOG_DIR="src/logs"
+   LOG_MAX_FILES=5
+   LOG_MAX_SIZE="20m"
    ```
 
 4. **Set up the database**
    ```bash
-   # Generate Prisma client
-   npx prisma generate
-   
-   # Run database migrations
-   npx prisma migrate dev
+   # Make sure MongoDB is running on your system
+   # The application will automatically connect to MongoDB using the DATABASE_URL
    ```
 
 ## 🚀 Running the Application
@@ -125,157 +131,6 @@ Once the application is running, you can access the Swagger documentation at:
 - `npm run format` - Format code with Prettier
 - `npm run test` - Run unit tests
 - `npm run test:watch` - Run tests in watch mode
+- `npm run test:debug` - Run tests in debug mode
 - `npm run test:cov` - Run tests with coverage
 - `npm run test:e2e` - Run e2e tests
-
-## 🏗️ Project Structure
-
-```
-src/
-├── common/                 # Shared utilities and services
-│   ├── decorators/        # Custom decorators
-│   ├── filters/           # Exception filters
-│   ├── guards/            # Authentication guards
-│   ├── interceptors/      # Request/response interceptors
-│   ├── middleware/        # Custom middleware
-│   ├── pipes/             # Validation pipes
-│   └── services/          # Shared services (PasswordService)
-├── config/                # Configuration module
-├── database/              # Database configuration and Prisma service
-├── modules/               # Feature modules
-│   ├── auth/              # Authentication module
-│   │   ├── dto/           # Data Transfer Objects
-│   │   ├── strategies/    # Passport strategies
-│   │   ├── auth.controller.ts
-│   │   ├── auth.service.ts
-│   │   └── auth.module.ts
-│   └── users/             # User management module
-│       ├── dto/           # Data Transfer Objects
-│       ├── users.controller.ts
-│       ├── users.service.ts
-│       └── users.module.ts
-├── shared/                # Shared interfaces and utilities
-│   ├── constants.ts       # Application constants
-│   ├── interfaces.ts      # TypeScript interfaces
-│   └── utils.ts           # Utility functions
-├── app.module.ts          # Root module
-└── main.ts                # Application entry point
-```
-
-## 🔐 Authentication
-
-The application uses JWT-based authentication. Here's how to use it:
-
-### Register a new user
-```bash
-curl -X POST http://localhost:3000/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": "SecurePass123!",
-    "bio": "Software developer"
-  }'
-```
-
-### Login
-```bash
-curl -X POST http://localhost:3000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john@example.com",
-    "password": "SecurePass123!"
-  }'
-```
-
-### Access protected routes
-```bash
-curl -X GET http://localhost:3000/users \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
-## 🛡️ Security Features
-
-- **Password Hashing**: Uses bcrypt with salt rounds
-- **JWT Authentication**: Secure token-based authentication
-- **Input Validation**: Comprehensive input validation using class-validator
-- **Rate Limiting**: Prevents abuse with configurable rate limits
-- **CORS**: Configurable Cross-Origin Resource Sharing
-- **Helmet**: Security headers for protection against common vulnerabilities
-- **SQL Injection Protection**: Prisma ORM provides protection against SQL injection
-
-## 🧪 Testing Strategy
-
-- **Unit Tests**: Test individual services and components
-- **Integration Tests**: Test module interactions
-- **E2E Tests**: Test complete user workflows
-- **Mocking**: Proper mocking of external dependencies
-- **Coverage**: Comprehensive test coverage reporting
-
-## 📈 Performance Considerations
-
-- **Database Indexing**: Proper database indexes for optimal query performance
-- **Pagination**: Implemented for large datasets
-- **Connection Pooling**: Prisma handles database connection pooling
-- **Caching**: Ready for Redis integration
-- **Compression**: Built-in response compression
-
-## 🔧 Configuration
-
-The application uses a centralized configuration system:
-
-- Environment variables for sensitive data
-- Type-safe configuration service
-- Default values for development
-- Validation of required configuration
-
-## 🚀 Deployment
-
-### Docker (Recommended)
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "run", "start:prod"]
-```
-
-### Environment Variables for Production
-- Set `NODE_ENV=production`
-- Use strong JWT secrets
-- Configure proper CORS origins
-- Set up database connection pooling
-- Configure rate limiting appropriately
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the repository
-- Check the API documentation at `/api/docs`
-- Review the test files for usage examples
-
-## 🔄 Changelog
-
-### v1.0.0
-- Initial release
-- Authentication system
-- User management
-- API documentation
-- Comprehensive testing
-- Security features

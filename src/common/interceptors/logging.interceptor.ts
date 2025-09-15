@@ -1,10 +1,11 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { Request, Response } from 'express';
+import { CustomLoggerService } from '@/core/logger/logger.service';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(LoggingInterceptor.name);
+  constructor(private readonly logger: CustomLoggerService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
@@ -14,24 +15,19 @@ export class LoggingInterceptor implements NestInterceptor {
     const userAgent = headers['user-agent'] || '';
     const now = Date.now();
 
-    this.logger.log(`Incoming Request: ${method} ${url} - ${ip} - ${userAgent}`);
+    this.logger.logRequest(method, url, ip || 'unknown', userAgent, LoggingInterceptor.name);
 
     return next.handle().pipe(
       tap(() => {
         const { statusCode } = response;
-        const contentLength = response.get('content-length') || 0;
+        const contentLength = parseInt(response.get('content-length') || '0', 10);
         const responseTime = Date.now() - now;
         
-        this.logger.log(
-          `Outgoing Response: ${method} ${url} - ${statusCode} - ${contentLength}b - ${responseTime}ms`,
-        );
+        this.logger.logResponse(method, url, statusCode, contentLength, responseTime, LoggingInterceptor.name);
       }),
       catchError((error) => {
         const responseTime = Date.now() - now;
-        this.logger.error(
-          `Request Failed: ${method} ${url} - ${error.message} - ${responseTime}ms`,
-          error.stack,
-        );
+        this.logger.logError(method, url, error.message, responseTime, LoggingInterceptor.name);
         return throwError(() => error);
       }),
     );

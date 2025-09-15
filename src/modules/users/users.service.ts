@@ -1,16 +1,22 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from '@/database/schemas/user.schema';
+import { User, UserDocument } from '@/core/database/schemas/user.schema';
 import { CreateUserData, UpdateUserData } from '@/shared/interfaces';
 import { ERROR_MESSAGES } from '@/shared/constants';
 import { sanitizeData } from '@/shared/utils';
+import { CustomLoggerService } from '@/core/logger/logger.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private readonly logger: CustomLoggerService,
+  ) {}
 
   async findAll(page = 1, limit = 10) {
+    this.logger.debug(`Querying users from database - Page: ${page}, Limit: ${limit}`, 'UsersService');
+    
     const skip = (page - 1) * limit;
     const [users, total] = await Promise.all([
       this.userModel
@@ -21,6 +27,8 @@ export class UsersService {
         .exec(),
       this.userModel.countDocuments().exec(),
     ]);
+
+    this.logger.debug(`Database query completed - Found ${users.length} users out of ${total} total`, 'UsersService');
 
     return {
       data: users.map(sanitizeData),

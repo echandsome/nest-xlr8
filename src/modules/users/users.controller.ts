@@ -22,14 +22,18 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { CustomLoggerService } from '@/core/logger/logger.service';
 
 @ApiTags('Users')
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly logger: CustomLoggerService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all users with pagination' })
@@ -73,7 +77,10 @@ export class UsersController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
-    return this.usersService.findAll(page || 1, limit || 10);
+    this.logger.log(`Fetching users - Page: ${page || 1}, Limit: ${limit || 10}`, 'UsersController');
+    const result = await this.usersService.findAll(page || 1, limit || 10);
+    this.logger.log(`Successfully fetched ${result.data.length} users`, 'UsersController');
+    return result;
   }
 
   @Get(':id')
@@ -88,7 +95,15 @@ export class UsersController {
     description: 'User not found',
   })
   async findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+    this.logger.log(`Fetching user with ID: ${id}`, 'UsersController');
+    try {
+      const user = await this.usersService.findOne(id);
+      this.logger.log(`User found: ${user.name} (${user.email})`, 'UsersController');
+      return user;
+    } catch (error) {
+      this.logger.error(`Failed to fetch user ${id}: ${error.message}`, error.stack, 'UsersController');
+      throw error;
+    }
   }
 
   @Post()
@@ -107,7 +122,15 @@ export class UsersController {
     description: 'Validation failed',
   })
   async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    this.logger.log(`Creating new user: ${createUserDto.email}`, 'UsersController');
+    try {
+      const user = await this.usersService.create(createUserDto);
+      this.logger.log(`User created successfully: ${user.name} (${user.email})`, 'UsersController');
+      return user;
+    } catch (error) {
+      this.logger.error(`Failed to create user ${createUserDto.email}: ${error.message}`, error.stack, 'UsersController');
+      throw error;
+    }
   }
 
   @Put(':id')

@@ -48,4 +48,20 @@ export class ConfigService {
   get globalPrefix(): string {
     return this.config.get<string>('GLOBAL_PREFIX', 'api/v1');
   }
+
+  get logLevel(): string {
+    return this.config.get<string>('LOG_LEVEL', 'info');
+  }
+
+  get logDir(): string {
+    return this.config.get<string>('LOG_DIR', 'src/logs');
+  }
+
+  get logMaxFiles(): number {
+    return Number(this.config.get<string>('LOG_MAX_FILES')) || 5;
+  }
+
+  get logMaxSize(): string {
+    return this.config.get<string>('LOG_MAX_SIZE', '20m');
+  }
 }
