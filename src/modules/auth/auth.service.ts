@@ -1,12 +1,12 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { PasswordService } from '../../common/services/password.service';
+import { PasswordService } from '@/common/services/password.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { AuthResponse, JwtPayload } from '../../shared/interfaces';
-import { ERROR_MESSAGES } from '../../shared/constants';
-import { sanitizeUser } from '../../shared/utils';
+import { AuthResponse, JwtPayload } from '@/shared/interfaces';
+import { ERROR_MESSAGES } from '@/shared/constants';
+import { sanitizeData } from '@/shared/utils';
 
 @Injectable()
 export class AuthService {
@@ -48,7 +48,7 @@ export class AuthService {
 
     return {
       access_token,
-      user: sanitizeUser(user),
+      user: sanitizeData(user),
     };
   }
 
@@ -74,7 +74,7 @@ export class AuthService {
 
     return {
       access_token,
-      user: sanitizeUser(user),
+      user: sanitizeData(user),
     };
   }
 
@@ -83,6 +83,6 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
-    return sanitizeUser(user);
+    return sanitizeData(user);
   }
 }

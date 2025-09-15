@@ -17,9 +17,13 @@ export function generatePaginationMeta(
   };
 }
 
-export function sanitizeUser(user: any) {
-  const { password, ...sanitizedUser } = user;
-  return sanitizedUser;
+export function sanitizeData(data: any) {
+  const { password, __v, ...sanitizedData } = JSON.parse(JSON.stringify(data));
+  if (sanitizedData._id) {
+    sanitizedData.id = sanitizedData._id.toString();
+    delete sanitizedData._id;
+  }
+  return sanitizedData;
 }
 
 export function generateRandomString(length: number): string {

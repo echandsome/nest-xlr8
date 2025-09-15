@@ -8,7 +8,6 @@ import {
   Delete, 
   Query, 
   UseGuards,
-  ParseIntPipe,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -23,14 +22,18 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { CustomLoggerService } from '@/core/logger/logger.service';
 
 @ApiTags('Users')
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly logger: CustomLoggerService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all users with pagination' })
@@ -47,7 +50,7 @@ export class UsersController {
           items: {
             type: 'object',
             properties: {
-              id: { type: 'number' },
+              id: { type: 'string' },
               name: { type: 'string' },
               email: { type: 'string' },
               bio: { type: 'string' },
@@ -74,12 +77,15 @@ export class UsersController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
-    return this.usersService.findAll(page || 1, limit || 10);
+    this.logger.log(`Fetching users - Page: ${page || 1}, Limit: ${limit || 10}`, 'UsersController');
+    const result = await this.usersService.findAll(page || 1, limit || 10);
+    this.logger.log(`Successfully fetched ${result.data.length} users`, 'UsersController');
+    return result;
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
-  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @ApiResponse({
     status: 200,
     description: 'User retrieved successfully',
@@ -88,8 +94,16 @@ export class UsersController {
     status: 404,
     description: 'User not found',
   })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    this.logger.log(`Fetching user with ID: ${id}`, 'UsersController');
+    try {
+      const user = await this.usersService.findOne(id);
+      this.logger.log(`User found: ${user.name} (${user.email})`, 'UsersController');
+      return user;
+    } catch (error) {
+      this.logger.error(`Failed to fetch user ${id}: ${error.message}`, error.stack, 'UsersController');
+      throw error;
+    }
   }
 
   @Post()
@@ -108,12 +122,20 @@ export class UsersController {
     description: 'Validation failed',
   })
   async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    this.logger.log(`Creating new user: ${createUserDto.email}`, 'UsersController');
+    try {
+      const user = await this.usersService.create(createUserDto);
+      this.logger.log(`User created successfully: ${user.name} (${user.email})`, 'UsersController');
+      return user;
+    } catch (error) {
+      this.logger.error(`Failed to create user ${createUserDto.email}: ${error.message}`, error.stack, 'UsersController');
+      throw error;
+    }
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Update user by ID' })
-  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @ApiResponse({
     status: 200,
     description: 'User updated successfully',
@@ -131,7 +153,7 @@ export class UsersController {
     description: 'Validation failed',
   })
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
@@ -140,7 +162,7 @@ export class UsersController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete user by ID' })
-  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @ApiResponse({
     status: 204,
     description: 'User deleted successfully',
@@ -149,7 +171,7 @@ export class UsersController {
     status: 404,
     description: 'User not found',
   })
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
 }

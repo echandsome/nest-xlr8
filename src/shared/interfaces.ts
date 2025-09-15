@@ -20,14 +20,14 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 }
 
 export interface JwtPayload {
-  sub: number;
+  sub: string;
   email: string;
   iat?: number;
   exp?: number;
 }
 
 export interface UserPayload {
-  id: number;
+  id: string;
   email: string;
 }
 
@@ -53,7 +53,7 @@ export interface LoginData {
 export interface AuthResponse {
   access_token: string;
   user: {
-    id: number;
+    id: string;
     name: string;
     email: string;
     bio?: string;
