@@ -64,4 +64,16 @@ export class ConfigService {
   get logMaxSize(): string {
     return this.config.get<string>('LOG_MAX_SIZE', '20m');
   }
+
+  get bigCommerceWebhookSecret(): string {
+    return this.config.get<string>('BIGCOMMERCE_WEBHOOK_SECRET')!;
+  }
+
+  get b2bBigCommerceWebhookSecret(): string {
+    return this.config.get<string>('B2B_BIGCOMMERCE_WEBHOOK_SECRET')!;
+  }
+
+  get acumaticaWebhookSecret(): string {
+    return this.config.get<string>('ACUMATICA_WEBHOOK_SECRET')!;
+  }
 }
