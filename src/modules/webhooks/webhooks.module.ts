@@ -5,8 +5,10 @@ import { AcumaticaWebhookController } from './controllers/acumatica-webhook.cont
 import { BigCommerceWebhookService } from './services/bigcommerce-webhook.service';
 import { B2BBigCommerceWebhookService } from './services/b2b-bigcommerce-webhook.service';
 import { AcumaticaWebhookService } from './services/acumatica-webhook.service';
+import { JobProcessorModule } from '@/core/redis/job-processor.module';
 
 @Module({
+  imports: [JobProcessorModule],
   controllers: [
     BigCommerceWebhookController,
     B2BBigCommerceWebhookController,

@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { AcumaticaWebhookDto } from '../dto/acumatica-webhook.dto';
 import { CustomLoggerService } from '@/core/logger/logger.service';
+import { JobQueueService } from '@/core/redis/job-queue.service';
 
 @Injectable()
 export class AcumaticaWebhookService {
-  constructor(private readonly logger: CustomLoggerService) {}
+  constructor(
+    private readonly logger: CustomLoggerService,
+    private readonly jobQueueService: JobQueueService,
+  ) {}
 
   async handleWebhook(webhookData: AcumaticaWebhookDto): Promise<void> {
     this.logger.log(`Processing Acumatica webhook: ${webhookData.eventType || 'unknown'} - ${webhookData.entityType || 'unknown'}`);
@@ -41,6 +45,18 @@ export class AcumaticaWebhookService {
     this.logger.log(`Processing Acumatica customer data (${eventType}):`, JSON.stringify(customerData, null, 2));
     
     // TODO: Implement Acumatica customer synchronization logic
+    const job = await this.jobQueueService.addJob({
+      type: 'webhook-acumatica',
+      payload: customerData,
+      priority: 5, // Lower priority for Acumatica
+      metadata: {
+        platform: 'acumatica',
+        type: 'customer',
+        receivedAt: new Date().toISOString(),
+      },
+    });
+
+    this.logger.log(job.id.toString() + ' ' + JSON.stringify(job))
     
     this.logger.log(`Acumatica Customer data processed successfully`);
   }

@@ -7,6 +7,7 @@ A production-ready NestJS application with authentication, user management, and 
 - **Authentication & Authorization**: JWT-based authentication with secure password hashing
 - **User Management**: Complete CRUD operations for user management
 - **Database Integration**: Mongoose ODM with MongoDB support
+- **Background Jobs**: Redis-based job queue system for asynchronous processing
 - **API Documentation**: Swagger/OpenAPI documentation
 - **Security**: Helmet, CORS, rate limiting, input validation
 - **Testing**: Unit tests, integration tests, and e2e tests
@@ -19,6 +20,7 @@ A production-ready NestJS application with authentication, user management, and 
 
 - Node.js (v18 or higher)
 - MongoDB (v4.4 or higher)
+- Redis (v6.0 or higher)
 - npm or yarn
 
 ## 🛠️ Installation
@@ -67,12 +69,22 @@ A production-ready NestJS application with authentication, user management, and 
    LOG_DIR="src/logs"
    LOG_MAX_FILES=5
    LOG_MAX_SIZE="20m"
+   
+   # Redis
+   REDIS_HOST="localhost"
+   REDIS_PORT=6379
+   REDIS_PASSWORD=""
+   REDIS_DB=0
+   REDIS_URL="redis://localhost:6379/0"
    ```
 
-4. **Set up the database**
+4. **Set up the databases**
    ```bash
    # Make sure MongoDB is running on your system
    # The application will automatically connect to MongoDB using the DATABASE_URL
+   
+   # Make sure Redis is running on your system
+   # The application will automatically connect to Redis using the REDIS_URL
    ```
 
 ## 🚀 Running the Application
