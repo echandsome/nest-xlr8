@@ -1,14 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { JobQueueService, JobData } from './job-queue.service';
+import { JobData } from './job-queue.service';
 import { CustomLoggerService } from '@/core/logger/logger.service';
+import { BigCommerceService } from '@/modules/bigcommerce/bigcommerce.service';
+import { B2BBigCommerceService } from '@/modules/b2b-bigcommerce/b2b-bigcommerce.service';
+import { AcumaticaService } from '@/modules/acumatica/acumatica.service';
 
 @Injectable()
 export class JobProcessorService {
   private processors: Map<string, (data: JobData) => Promise<void>> = new Map();
 
   constructor(
-    private jobQueueService: JobQueueService,
     private logger: CustomLoggerService,
+    private bigCommerceService: BigCommerceService,
+    private b2bBigCommerceService: B2BBigCommerceService,
+    private acumaticaService: AcumaticaService,
   ) {
     this.registerDefaultProcessors();
   }
@@ -47,52 +52,48 @@ export class JobProcessorService {
    * Register default processors for common job types
    */
   private registerDefaultProcessors() {
-    // Webhook processors
-    this.registerProcessor('webhook-bigcommerce', this.processBigCommerceWebhook.bind(this));
-    this.registerProcessor('webhook-b2b-bigcommerce', this.processB2BBigCommerceWebhook.bind(this));
-    this.registerProcessor('webhook-acumatica', this.processAcumaticaWebhook.bind(this));
+    // processors
+    this.registerProcessor('bigcommerce', this.processBigCommerce.bind(this));
+    this.registerProcessor('b2b-bigcommerce', this.processB2BBigCommerce.bind(this));
+    this.registerProcessor('acumatica', this.processAcumatica.bind(this));
     this.logger.log('Default job processors registered', 'JobProcessorService');
   }
 
-  // Webhook Processors
-  private async processBigCommerceWebhook(data: JobData) {
-    this.logger.log(`Processing BigCommerce webhook: ${JSON.stringify(data.payload)}`, 'JobProcessorService');
+  // Processors
+  private async processBigCommerce(data: JobData) {
+    this.logger.log(`Processing BigCommerce: ${JSON.stringify(data.payload)}`, 'JobProcessorService');
     
-    // Simulate processing time
-    await this.simulateProcessing(1000, 3000);
-    
-    // Here you would implement your actual BigCommerce webhook processing logic
-    
-    this.logger.log('BigCommerce webhook processed successfully', 'JobProcessorService');
-  }
-
-  private async processB2BBigCommerceWebhook(data: JobData) {
-    this.logger.log(`Processing B2B BigCommerce webhook: ${JSON.stringify(data.payload)}`, 'JobProcessorService');
-    
-    // Simulate processing time
-    await this.simulateProcessing(1500, 4000);
-    
-    // Here you would implement your actual B2B BigCommerce webhook processing logic
-    this.logger.log('B2B BigCommerce webhook processed successfully', 'JobProcessorService');
-  }
-
-  private async processAcumaticaWebhook(data: JobData) {
-    this.logger.log(`Processing Acumatica webhook: ${JSON.stringify(data.payload)}`, 'JobProcessorService');
-    
-    // Simulate processing time
-    await this.simulateProcessing(2000, 5000);
-    
-    // Here you would implement your actual Acumatica webhook processing logic
-    this.logger.log('Acumatica webhook processed successfully', 'JobProcessorService');
-  }
-
-  private async simulateProcessing(minMs: number, maxMs: number): Promise<void> {
-    const delay = Math.random() * (maxMs - minMs) + minMs;
-    await new Promise(resolve => setTimeout(resolve, delay));
-    
-    // Simulate occasional failures for testing
-    if (Math.random() < 0.1) {
-      throw new Error('Simulated processing failure');
+    try {
+      await this.bigCommerceService.processHandler(data.payload);
+      this.logger.log('BigCommerce processed successfully', 'JobProcessorService');
+    } catch (error) {
+      this.logger.error(`BigCommerce processing failed: ${error.message}`, error.stack, 'JobProcessorService');
+      throw error;
     }
   }
+
+  private async processB2BBigCommerce(data: JobData) {
+    this.logger.log(`Processing B2B BigCommerce: ${JSON.stringify(data.payload)}`, 'JobProcessorService');
+    
+    try {
+      await this.b2bBigCommerceService.processHandler(data.payload);
+      this.logger.log('B2B BigCommerce processed successfully', 'JobProcessorService');
+    } catch (error) {
+      this.logger.error(`B2B BigCommerce processing failed: ${error.message}`, error.stack, 'JobProcessorService');
+      throw error;
+    }
+  }
+
+  private async processAcumatica(data: JobData) {
+    this.logger.log(`Processing Acumatica: ${JSON.stringify(data.payload)}`, 'JobProcessorService');
+    
+    try {
+      await this.acumaticaService.processHandler(data.payload);
+      this.logger.log('Acumatica processed successfully', 'JobProcessorService');
+    } catch (error) {
+      this.logger.error(`Acumatica processing failed: ${error.message}`, error.stack, 'JobProcessorService');
+      throw error;
+    }
+  }
+
 }

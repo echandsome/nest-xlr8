@@ -4,9 +4,8 @@ import { UsersService } from '../users/users.service';
 import { PasswordService } from '@/common/services/password.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { AuthResponse, JwtPayload } from '@/shared/interfaces';
-import { ERROR_MESSAGES } from '@/shared/constants';
-import { sanitizeData } from '@/shared/utils';
+import { IAuthResponse, IJwtPayload } from '@/shared/interfaces';
+import { sanitizeData } from '@/shared/utils/helper';
 
 @Injectable()
 export class AuthService {
@@ -16,11 +15,11 @@ export class AuthService {
     private passwordService: PasswordService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<AuthResponse> {
+  async register(dto: RegisterDto): Promise<IAuthResponse> {
     // Check if user already exists
     const existingUser = await this.usersService.findByEmail(dto.email);
     if (existingUser) {
-      throw new ConflictException(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS);
+      throw new ConflictException('Email already exists');
     }
 
     // Validate password strength
@@ -43,7 +42,7 @@ export class AuthService {
     });
 
     // Generate JWT token
-    const payload: JwtPayload = { sub: user.id, email: user.email };
+    const payload: IJwtPayload = { sub: user.id, email: user.email };
     const access_token = this.jwtService.sign(payload);
 
     return {
@@ -52,11 +51,11 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto): Promise<AuthResponse> {
+  async login(dto: LoginDto): Promise<IAuthResponse> {
     // Find user by email
     const user = await this.usersService.findByEmail(dto.email);
     if (!user) {
-      throw new UnauthorizedException(ERROR_MESSAGES.INVALID_CREDENTIALS);
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     // Verify password
@@ -65,11 +64,11 @@ export class AuthService {
       user.password,
     );
     if (!isPasswordValid) {
-      throw new UnauthorizedException(ERROR_MESSAGES.INVALID_CREDENTIALS);
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     // Generate JWT token
-    const payload: JwtPayload = { sub: user.id, email: user.email };
+    const payload: IJwtPayload = { sub: user.id, email: user.email };
     const access_token = this.jwtService.sign(payload);
 
     return {
@@ -78,10 +77,10 @@ export class AuthService {
     };
   }
 
-  async validateUser(payload: JwtPayload) {
+  async validateUser(payload: IJwtPayload) {
     const user = await this.usersService.findOne(payload.sub);
     if (!user) {
-      throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND);
+      throw new UnauthorizedException('User not found');
     }
     return sanitizeData(user);
   }

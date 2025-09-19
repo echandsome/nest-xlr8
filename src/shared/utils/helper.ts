@@ -1,10 +1,10 @@
-import { PaginationMeta } from './interfaces';
+import { IPaginationMeta } from '../interfaces';
 
 export function generatePaginationMeta(
   page: number,
   limit: number,
   total: number,
-): PaginationMeta {
+): IPaginationMeta {
   const totalPages = Math.ceil(total / limit);
   
   return {

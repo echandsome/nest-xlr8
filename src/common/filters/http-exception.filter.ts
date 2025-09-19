@@ -7,8 +7,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ApiResponse } from '@/shared/interfaces';
-import { formatError } from '@/shared/utils';
+import { IApiResponse } from '@/shared/interfaces';
+import { formatError } from '@/shared/utils/helper';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -35,7 +35,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       exception instanceof Error ? exception.stack : undefined,
     );
 
-    const errorResponse: ApiResponse = {
+    const errorResponse: IApiResponse = {
       success: false,
       error: formatError(exception),
       message: message,

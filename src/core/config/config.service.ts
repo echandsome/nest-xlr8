@@ -65,6 +65,14 @@ export class ConfigService {
     return this.config.get<string>('LOG_MAX_SIZE', '20m');
   }
 
+  get bigCommerceStoreHash(): string {
+    return this.config.get<string>('BIGCOMMERCE_STORE_HASH')!;
+  }
+
+  get bigCommerceToken(): string {
+    return this.config.get<string>('BIGCOMMERCE_TOKEN')!;
+  }
+
   get bigCommerceWebhookSecret(): string {
     return this.config.get<string>('BIGCOMMERCE_WEBHOOK_SECRET')!;
   }

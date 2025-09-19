@@ -2,9 +2,8 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '@/core/database/schemas/user.schema';
-import { CreateUserData, UpdateUserData } from '@/shared/interfaces';
-import { ERROR_MESSAGES } from '@/shared/constants';
-import { sanitizeData } from '@/shared/utils';
+import { ICreateUserData, IUpdateUserData } from '@/shared/interfaces';
+import { sanitizeData } from '@/shared/utils/helper';
 import { CustomLoggerService } from '@/core/logger/logger.service';
 
 @Injectable()
@@ -46,7 +45,7 @@ export class UsersService {
   async findOne(id: string) {
     const user = await this.userModel.findById(id).exec();
     if (!user) {
-      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
+      throw new NotFoundException('User not found');
     }
     return sanitizeData(user);
   }
@@ -55,27 +54,27 @@ export class UsersService {
     return this.userModel.findOne({ email }).exec();
   }
 
-  async create(data: CreateUserData) {
+  async create(data: ICreateUserData) {
     try {
       const user = new this.userModel(data);
       const savedUser = await user.save();
       return sanitizeData(savedUser);
     } catch (error) {
       if (error.code === 11000) {
-        throw new ConflictException(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS);
+        throw new ConflictException('Email already exists');
       }
       throw error;
     }
   }
 
-  async update(id: string, data: UpdateUserData) {
+  async update(id: string, data: IUpdateUserData) {
     const user = await this.findOne(id);
     
     // Check if email is being changed and if it already exists
     if (data.email && data.email !== user.email) {
       const existingUser = await this.findByEmail(data.email);
       if (existingUser) {
-        throw new ConflictException(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS);
+        throw new ConflictException('Email already exists');
       }
     }
 

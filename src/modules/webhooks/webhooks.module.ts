@@ -5,10 +5,16 @@ import { AcumaticaWebhookController } from './controllers/acumatica-webhook.cont
 import { BigCommerceWebhookService } from './services/bigcommerce-webhook.service';
 import { B2BBigCommerceWebhookService } from './services/b2b-bigcommerce-webhook.service';
 import { AcumaticaWebhookService } from './services/acumatica-webhook.service';
-import { JobProcessorModule } from '@/core/redis/job-processor.module';
+import { BigCommerceModule } from '../bigcommerce/bigcommerce.module';
+import { B2BBigCommerceModule } from '../b2b-bigcommerce/b2b-bigcommerce.module';
+import { AcumaticaModule } from '../acumatica/acumatica.module';
 
 @Module({
-  imports: [JobProcessorModule],
+  imports: [
+    BigCommerceModule,
+    B2BBigCommerceModule,
+    AcumaticaModule,
+  ],
   controllers: [
     BigCommerceWebhookController,
     B2BBigCommerceWebhookController,

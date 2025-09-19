@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { AuthResponse } from '@/shared/interfaces';
+import { IAuthResponse } from '@/shared/interfaces';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -41,7 +41,7 @@ export class AuthController {
     status: 400,
     description: 'Validation failed',
   })
-  async register(@Body() dto: RegisterDto): Promise<AuthResponse> {
+  async register(@Body() dto: RegisterDto): Promise<IAuthResponse> {
     return this.authService.register(dto);
   }
 
@@ -76,7 +76,7 @@ export class AuthController {
     status: 400,
     description: 'Validation failed',
   })
-  async login(@Body() dto: LoginDto): Promise<AuthResponse> {
+  async login(@Body() dto: LoginDto): Promise<IAuthResponse> {
     return this.authService.login(dto);
   }
 }

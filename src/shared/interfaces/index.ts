@@ -1,4 +1,4 @@
-export interface ApiResponse<T = any> {
+export interface IApiResponse<T = any> {
   success: boolean;
   data?: T;
   message?: string;
@@ -6,7 +6,7 @@ export interface ApiResponse<T = any> {
   timestamp: string;
 }
 
-export interface PaginationMeta {
+export interface IPaginationMeta {
   page: number;
   limit: number;
   total: number;
@@ -15,42 +15,42 @@ export interface PaginationMeta {
   hasPrev: boolean;
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  meta: PaginationMeta;
+export interface IPaginatedResponse<T> extends IApiResponse<T[]> {
+  meta: IPaginationMeta;
 }
 
-export interface JwtPayload {
+export interface IJwtPayload {
   sub: string;
   email: string;
   iat?: number;
   exp?: number;
 }
 
-export interface UserPayload {
+export interface IUserPayload {
   id: string;
   email: string;
 }
 
-export interface CreateUserData {
+export interface ICreateUserData {
   name: string;
   email: string;
   password: string;
   bio?: string;
 }
 
-export interface UpdateUserData {
+export interface IUpdateUserData {
   name?: string;
   email?: string;
   bio?: string;
   password?: string;
 }
 
-export interface LoginData {
+export interface ILoginData {
   email: string;
   password: string;
 }
 
-export interface AuthResponse {
+export interface IAuthResponse {
   access_token: string;
   user: {
     id: string;

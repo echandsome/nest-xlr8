@@ -3,7 +3,7 @@ import { NotFoundException, ConflictException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { UsersService } from './users.service';
 import { User } from '../../core/database/schemas/user.schema';
-import { CreateUserData, UpdateUserData } from '../../shared/interfaces';
+import { ICreateUserData, IUpdateUserData } from '../../shared/interfaces';
 import { CustomLoggerService } from '../../core/logger/logger.service';
 
 describe('UsersService', () => {
@@ -145,7 +145,7 @@ describe('UsersService', () => {
   });
 
   describe('create', () => {
-    const createData: CreateUserData = {
+    const createData: ICreateUserData = {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'hashedPassword',
@@ -171,7 +171,7 @@ describe('UsersService', () => {
   });
 
   describe('update', () => {
-    const updateData: UpdateUserData = {
+    const updateData: IUpdateUserData = {
       name: 'Jane Doe',
       bio: 'Updated bio',
     };
@@ -193,7 +193,7 @@ describe('UsersService', () => {
     });
 
     it('should throw ConflictException if email already exists', async () => {
-      const updateDataWithEmail: UpdateUserData = {
+      const updateDataWithEmail: IUpdateUserData = {
         email: 'jane@example.com',
       };
       const existingUser = { ...mockUser, email: 'jane@example.com' };

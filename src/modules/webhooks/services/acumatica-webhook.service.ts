@@ -1,87 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { AcumaticaWebhookDto } from '../dto/acumatica-webhook.dto';
 import { CustomLoggerService } from '@/core/logger/logger.service';
-import { JobQueueService } from '@/core/redis/job-queue.service';
+import { AcumaticaService } from '@/modules/acumatica/acumatica.service';
 
 @Injectable()
 export class AcumaticaWebhookService {
   constructor(
     private readonly logger: CustomLoggerService,
-    private readonly jobQueueService: JobQueueService,
+    private readonly acumaticaService: AcumaticaService,
   ) {}
 
   async handleWebhook(webhookData: AcumaticaWebhookDto): Promise<void> {
-    this.logger.log(`Processing Acumatica webhook: ${webhookData.eventType || 'unknown'} - ${webhookData.entityType || 'unknown'}`);
+    this.logger.log(`Received Acumatica webhook: ${JSON.stringify(webhookData)}`, 'AcumaticaWebhookService');
 
-    try {
-      // Log the entire webhook data for debugging
-      this.logger.debug('Acumatica webhook data:', JSON.stringify(webhookData, null, 2));
+    await this.acumaticaService.processWebhook(webhookData);
 
-      const entityType = webhookData.entityType || 'unknown';
-      const eventType = webhookData.eventType || 'unknown';
-      
-      switch (entityType) {
-        case 'Customer':
-          await this.handleCustomerWebhook(webhookData.data, eventType);
-          break;
-        case 'SalesOrder':
-          await this.handleOrderWebhook(webhookData.data, eventType);
-          break;
-        case 'InventoryItem':
-          await this.handleProductWebhook(webhookData.data, eventType);
-          break;
-        default:
-          this.logger.warn(`Unhandled Acumatica webhook entity type: ${entityType}`);
-          // Still process the webhook data for debugging
-          await this.handleGenericWebhook(webhookData);
-      }
-    } catch (error) {
-      this.logger.error(`Error processing Acumatica webhook: ${error.message}`, error.stack);
-      throw error;
-    }
+    this.logger.log(`Acumatica webhook processed successfully`, 'AcumaticaWebhookService');
   }
 
-  private async handleCustomerWebhook(customerData: any, eventType: string): Promise<void> {
-    this.logger.log(`Processing Acumatica customer data (${eventType}):`, JSON.stringify(customerData, null, 2));
-    
-    // TODO: Implement Acumatica customer synchronization logic
-    const job = await this.jobQueueService.addJob({
-      type: 'webhook-acumatica',
-      payload: customerData,
-      priority: 5, // Lower priority for Acumatica
-      metadata: {
-        platform: 'acumatica',
-        type: 'customer',
-        receivedAt: new Date().toISOString(),
-      },
-    });
-
-    this.logger.log(job.id.toString() + ' ' + JSON.stringify(job))
-    
-    this.logger.log(`Acumatica Customer data processed successfully`);
-  }
-
-  private async handleOrderWebhook(orderData: any, eventType: string): Promise<void> {
-    this.logger.log(`Processing Acumatica order data (${eventType}):`, JSON.stringify(orderData, null, 2));
-    
-    // TODO: Implement Acumatica order synchronization logic
-    
-    this.logger.log(`Acumatica Order data processed successfully`);
-  }
-
-  private async handleProductWebhook(productData: any, eventType: string): Promise<void> {
-    this.logger.log(`Processing Acumatica product data (${eventType}):`, JSON.stringify(productData, null, 2));
-    
-    // TODO: Implement Acumatica product synchronization logic
-    
-    this.logger.log(`Acumatica Product data processed successfully`);
-  }
-
-  private async handleGenericWebhook(webhookData: any): Promise<void> {
-    this.logger.log(`Processing generic Acumatica webhook data:`, JSON.stringify(webhookData, null, 2));
-    
-    // TODO: Implement generic webhook handling logic
-    
-    this.logger.log(`Generic Acumatica webhook data processed successfully`);
-  }
 }
