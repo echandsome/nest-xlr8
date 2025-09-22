@@ -168,6 +168,9 @@ export class BigCommerceService {
     }
   }
 
+  /**
+   * Process Acumatica handler (redis)
+   */
   async processHandler(data: any): Promise<void> {
     this.logger.log(`Processing BigCommerce: ${JSON.stringify(data)}`, 'BigCommerceService');
   }

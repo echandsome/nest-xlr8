@@ -8,6 +8,13 @@ export enum Category {
     B2C = 'b2c'
 }
 
+export enum Status {
+    PENDING = 'pending',
+    PROCESSING = 'processing',
+    COMPLETED = 'completed',
+    FAILED = 'failed'
+}
+
 @Schema({ timestamps: true })
 export class BigCommerce {
     @Prop({ required: true })
@@ -27,6 +34,9 @@ export class BigCommerce {
     
     @Prop({ required: true, enum: Category })
     category: Category;
+
+    @Prop({ required: true, enum: Status })
+    status: Status;
 }
 
 export const BigCommerceSchema = SchemaFactory.createForClass(BigCommerce);

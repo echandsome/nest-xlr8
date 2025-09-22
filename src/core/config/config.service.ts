@@ -105,4 +105,28 @@ export class ConfigService {
     return this.config.get<string>('REDIS_URL', `redis://${this.redisHost}:${this.redisPort}/${this.redisDb}`);
   }
 
+  get acumaticaInstanceUri(): string {
+    return this.config.get<string>('ACUMATICA_INSTANCE_URI')!;
+  }
+
+  get acumaticaApiVersion(): string {
+    return this.config.get<string>('ACUMATICA_API_VERSION')!;
+  }
+
+  get acumaticaUsername(): string {
+    return this.config.get<string>('ACUMATICA_USERNAME')!;
+  }
+
+  get acumaticaPassword(): string {
+    return this.config.get<string>('ACUMATICA_PASSWORD')!;
+  }
+  
+  get acumaticaCompany(): string {
+    return this.config.get<string>('ACUMATICA_COMPANY')!;
+  }
+
+  get acumaticaEndpointName(): string {
+    return this.config.get<string>('ACUMATICA_ENDPOINT_NAME')!;
+  }
+
 }
