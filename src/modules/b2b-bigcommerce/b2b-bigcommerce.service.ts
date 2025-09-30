@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { BigCommerce, BigCommerceDocument, Category } from '@/core/database/schemas/bigcommerce.schema';
+import { BigCommerce, BigCommerceDocument, Category, Status } from '@/core/database/schemas/bigcommerce.schema';
 import { CustomLoggerService } from '@/core/logger/logger.service';
 import { ConfigService } from '@/core/config/config.service';
-import { getOrderById } from '@/shared/apis/bigcommerce';
+import { getOrderById } from '@/shared/apis/bigcommerce.api';
 import { JobQueueService } from '@/core/redis/job-queue.service';
 
 @Injectable()
@@ -62,6 +62,7 @@ export class B2BBigCommerceService {
         scope: webhookData.scope,
         data: webhookData.data,
         category: Category.B2B, // B2B BigCommerce webhooks are B2B
+        status: Status.PENDING,
       });
 
       await bigCommerceData.save();

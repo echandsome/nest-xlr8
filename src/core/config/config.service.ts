@@ -129,4 +129,8 @@ export class ConfigService {
     return this.config.get<string>('ACUMATICA_ENDPOINT_NAME')!;
   }
 
+  get apiNinjasApiKey(): string {
+    return this.config.get<string>('API_NINJAS_API_KEY')!;
+  }
+
 }

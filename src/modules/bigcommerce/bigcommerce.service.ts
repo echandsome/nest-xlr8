@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { BigCommerce, BigCommerceDocument, Category } from '@/core/database/schemas/bigcommerce.schema';
+import { BigCommerce, BigCommerceDocument, Category, Status } from '@/core/database/schemas/bigcommerce.schema';
 import { CustomLoggerService } from '@/core/logger/logger.service';
 import { ConfigService } from '@/core/config/config.service';
-import { getOrderById } from '@/shared/apis/bigcommerce';
+import { getOrderById, getCustomerById, getCustomerAddressById, getProductById } from '@/shared/apis/bigcommerce.api';
 import { JobQueueService } from '@/core/redis/job-queue.service';
+import { AcumaticaService } from '../acumatica/acumatica.service';
+import { ICAcumaticaCustomer } from '@/shared/interfaces';
+import { formatCountryCode } from '@/shared/utils/helper';
 
 @Injectable()
 export class BigCommerceService {
@@ -13,6 +16,7 @@ export class BigCommerceService {
     private readonly configService: ConfigService,
     private readonly logger: CustomLoggerService,
     private readonly jobQueueService: JobQueueService,
+    private readonly acumaticaService: AcumaticaService,
     @InjectModel(BigCommerce.name) private bigCommerceModel: Model<BigCommerceDocument>,
   ) {}
 
@@ -53,7 +57,7 @@ export class BigCommerceService {
   /**
    * Save webhook data to database
    */
-  async saveWebhookToDatabase(webhookData: any): Promise<void> {
+  async saveWebhookToDatabase(webhookData: any): Promise<BigCommerceDocument> {
     try {
       const bigCommerceData = new this.bigCommerceModel({
         producer: webhookData.producer,
@@ -62,10 +66,12 @@ export class BigCommerceService {
         scope: webhookData.scope,
         data: webhookData.data,
         category: Category.B2C, // Regular BigCommerce webhooks are B2C
+        status: Status.PENDING,
       });
 
-      await bigCommerceData.save();
+      const savedData = await bigCommerceData.save();
       this.logger.log(`BigCommerce webhook data saved to database with ID: ${bigCommerceData._id}`);
+      return savedData;
     } catch (error) {
       this.logger.error(`Error saving BigCommerce webhook to database: ${error.message}`, error.stack);
       throw error;
@@ -97,12 +103,12 @@ export class BigCommerceService {
       const order = await getOrderById(storeHash, orderId, token);
       
       if (order.status !== 'Incomplete') {
-        await this.saveWebhookToDatabase(webhookData);
+        const savedData = await this.saveWebhookToDatabase(webhookData);
 
         // Queue the webhook for processing by the BigCommerce module
         const job = await this.jobQueueService.addJob({
           type: 'bigcommerce',
-          payload: webhookData,
+          payload: { ...webhookData, id: savedData._id },
           priority: 5, // Lower priority for BigCommerce
           metadata: {
             platform: 'bigcommerce',
@@ -172,6 +178,109 @@ export class BigCommerceService {
    * Process Acumatica handler (redis)
    */
   async processHandler(data: any): Promise<void> {
-    this.logger.log(`Processing BigCommerce: ${JSON.stringify(data)}`, 'BigCommerceService');
+    console.log(data);
+    await this.bigCommerceModel.updateOne({ _id: data.id }, { $set: { status: Status.PROCESSING } });
+
+    const storeHash = this.configService.bigCommerceStoreHash;
+    const token = this.configService.bigCommerceToken;
+    const orderId = data.data.id;
+
+    const order = await getOrderById(storeHash, orderId, token);
+    const customer = await getCustomerById(storeHash, order.customer_id, token);
+    const customerAddress = await getCustomerAddressById(storeHash, order.customer_id, token);
+    const products = await getProductById(storeHash, orderId, token);
+
+    const email = customer.email;
+
+    // console.log(email)
+
+    let acustomer = await this.acumaticaService.getCustomerByEmail(email);
+
+    if (!acustomer) {
+      const customerName = customer.first_name + '' + customer.last_name;
+      const customerClassID = customerName.toUpperCase();
+      const address1 = customerAddress.address1;
+      const address2 = customerAddress.address2;
+      const city = customerAddress.city;
+      const state = customerAddress.state_or_province;
+      const postalCode = customerAddress.postal_code;
+      const country = customerAddress.country;
+      const countryCode = await formatCountryCode(country, this.configService.apiNinjasApiKey);
+      const company = customer.company ? 'Organization' : 'Individual';
+
+      const accustomer: ICAcumaticaCustomer = {
+        CustomerID: {
+          "value": customerClassID
+        },
+        "CustomerName": {
+          "value": customerName
+        },
+        "CustomerClassID": {
+          "value": "DEFAULT"
+        },
+        "CustomerCategory": {
+          "value": company
+        },
+        "Email": {
+          "value": email
+        },
+        "MainContact": {
+          "Address": {
+            "AddressLine1": {
+              "value": address1
+            },
+            "AddressLine2": {
+              "value": address2
+            },
+            "City": {
+              "value": city
+            },
+            "State": {
+              "value": state
+            },
+            "PostalCode": {
+              "value": postalCode
+            },
+            "Country": {
+              "value": countryCode
+            }
+          }
+        }
+      }
+      acustomer = await this.acumaticaService.createCustomer(accustomer);
+    }
+
+    // this.logger.log(JSON.stringify(acustomer, null, 2));
+
+    products.forEach(async (product) => {
+      const inventoryItem = await this.acumaticaService.getInventoryItemBySku(product.sku);
+      if (!inventoryItem) {
+        // const acproduct = {
+        //   "InventoryID": {
+        //     "value": product.sku
+        //   },
+        //   "Description": {
+        //     "value": product.name
+        //   },
+        //   "ItemStatus": {
+        //     "value": "Active"
+        //   },
+        //   "ItemClass": {
+        //     "value": "NEWCLASS"
+        //   },
+        //   "PostingClass": {
+        //     "value": "AOL"
+        //   },
+        //   "TaxCategory": {
+        //     "value": "EXEMPT"
+        //   }
+        // }
+        // const inventoryItem = await this.acumaticaService.createInventoryItem(acproduct);
+        // this.logger.log(JSON.stringify(inventoryItem, null, 2));
+      }
+      console.log('---', inventoryItem);
+    });
+
+   
   }
 }

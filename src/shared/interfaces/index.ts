@@ -1,3 +1,6 @@
+export * from './acamatica.interface';
+export * from './bigcommerce.interface';
+
 export interface IApiResponse<T = any> {
   success: boolean;
   data?: T;

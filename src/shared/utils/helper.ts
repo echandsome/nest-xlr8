@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { IPaginationMeta } from '../interfaces';
 
 export function generatePaginationMeta(
@@ -45,4 +46,15 @@ export function formatError(error: any): string {
   if (error?.message) return error.message;
   if (error?.error) return error.error;
   return 'An unexpected error occurred';
+}
+
+export async function formatCountryCode(country: string, API_NINJAS_API_KEY: string): Promise<string> {
+  let url = `https://api.api-ninjas.com/v1/country?name=${country}`;
+  let options = {
+    headers: {
+      'X-Api-Key': API_NINJAS_API_KEY
+    }
+  };
+  let response = await axios.get(url, options);
+  return response.data[0].iso2;
 }

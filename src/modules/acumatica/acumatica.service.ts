@@ -5,6 +5,7 @@ import { CustomLoggerService } from '@/core/logger/logger.service';
 import { ConfigService } from '@/core/config/config.service';
 import { JobQueueService } from '@/core/redis/job-queue.service';
 import axios from 'axios';
+import { ICAcumaticaCustomer, IAcumaticaCustomer } from '@/shared/interfaces';
 
 @Injectable()
 export class AcumaticaService {
@@ -96,7 +97,7 @@ export class AcumaticaService {
     }
   }  
 
-  async getCustomers() {
+  async getQueryTemplate(endpoint: string, method: string = 'get', data: any = null) {
     let cookies: string[] = [];
     try {
       const loginResponse = await this.login();
@@ -110,14 +111,22 @@ export class AcumaticaService {
       const endpointName = this.configService.acumaticaEndpointName;
       const apiVersion = this.configService.acumaticaApiVersion;
 
-      const url = `${instanceUri}/entity/${endpointName}/${apiVersion}/Customer`;
+      const url = `${instanceUri}/entity/${endpointName}/${apiVersion}/${endpoint}`;
       const axiosInstance = this.createAxiosInstance(cookies);
-      const response = await axiosInstance.get(url);
+      let response;
+      if (method === 'get') {
+        response = await axiosInstance.get(url);
+      } else if (method === 'put') {
+        response = await axiosInstance.put(url, data);
+      } else {
+        throw new Error('Invalid method');
+      }
 
       await this.logout(cookies);
 
       return response.data;
     } catch (error: any) {
+      console.log(JSON.stringify(error.response.data));
       if (cookies) {
         try {
           await this.logout(cookies);
@@ -127,6 +136,47 @@ export class AcumaticaService {
       }
       throw error;
     }
+  }
+
+  async getCustomers(params: string = '') {
+    const endpoint = `Customer${params}`;
+    const customers = await this.getQueryTemplate(endpoint, 'get');
+    return customers;
+  }
+
+  async getCustomerByEmail(email: string): Promise<IAcumaticaCustomer | null> {
+    const customers = await this.getCustomers(`?$filter=Email eq '${email}'`);
+    return customers.length > 0 ? customers[0] : null;
+  }
+
+  async createCustomer(customer: ICAcumaticaCustomer): Promise<IAcumaticaCustomer> {
+    return this.getQueryTemplate('Customer', 'put', customer);
+  }
+
+  async getInventoryItems(params: string = '') {
+    const endpoint = `StockItem/${params}`;
+    const inventoryItems = await this.getQueryTemplate(endpoint, 'get');
+    return inventoryItems;
+  }
+
+  async getInventoryItemBySku(sku: string) {
+    const inventoryItems = await this.getInventoryItems(`?$filter=InventoryID eq '${sku}'`);
+    return inventoryItems.length > 0 ? inventoryItems[0] : null;
+  }
+
+  async createInventoryItem(inventoryItem: any) {
+    const createdInventoryItem = await this.getQueryTemplate('StockItem', 'put', inventoryItem);
+    return createdInventoryItem;
+  }
+
+  async getItemClasses() {
+    const itemClasses = await this.getQueryTemplate('ItemClass', 'get');
+    return itemClasses;
+  }
+
+  async createItemClass(itemClass: any) {
+    const createdItemClass = await this.getQueryTemplate('ItemClass', 'put', itemClass);
+    return createdItemClass;
   }
 
   /**
@@ -217,9 +267,63 @@ export class AcumaticaService {
    * Process Acumatica handler (redis)
    */
   async processHandler(data: any): Promise<void> {
-    this.logger.log(`Processing Acumatica: ${JSON.stringify(data)}`, 'AcumaticaService');
-    const customers = await this.getCustomers();
-    this.logger.log(`Acumatica customers: ${JSON.stringify(customers)}`, 'AcumaticaService');
+
+    // const inventoryItems = await this.getInventoryItems();
+    // this.logger.log(`Acumatica inventory items: ${JSON.stringify(inventoryItems)}`, 'AcumaticaService');
+
+    // const inventoryItem = {
+    //   "InventoryID": {
+    //     "value": "NEWITEMW"
+    //   },
+    //   "Description": {
+    //     "value": "New Item Description"
+    //   },
+    //   "ItemClass": {
+    //     "value": "NEWCLASS"
+    //   },
+    //   "ItemStatus": {
+    //     "value": "Active"
+    //   },
+    //   "PostingClass": {
+    //     "value": "AOL"
+    //   },
+    //   "TaxCategory": {
+    //     "value": "EXEMPT"
+    //   }
+    // };
+
+    // const createdInventoryItem = await this.createInventoryItem(inventoryItem);
+    // this.logger.log(`Acumatica inventory item created: ${JSON.stringify(createdInventoryItem)}`, 'AcumaticaService');
+
+    // const itemClasses = await this.getItemClasses();
+    // this.logger.log(`Acumatica item classes: ${JSON.stringify(itemClasses)}`, 'AcumaticaService');
+
+    // const itemClass = {
+    //   "ClassID": {
+    //     "value": "NEWCLASS"
+    //   },
+    //   "Description": {
+    //     "value": "New Item Class for Widgets"
+    //   },
+    //   "ItemType": {
+    //     "value": "Finished Good"
+    //   },
+    //   "AvailabilityCalculationRule": {
+    //     "value": "ALLOTHER"
+    //   },
+    //   "BaseUOM": {
+    //     "value": "PIECE"
+    //   },
+    //   "PurchaseUOM": {
+    //     "value": "PIECE"
+    //   },
+    //   "SalesUOM": {
+    //     "value": "PIECE"
+    //   }
+    // }
+
+    // const createdItemClass = await this.createItemClass(itemClass);
+    // this.logger.log(`Acumatica item class created: ${JSON.stringify(createdItemClass)}`, 'AcumaticaService');
   }
 
 }
